@@ -1,5 +1,6 @@
 package interfaces;
 
-public class Persistente {
-    
+public interface Persistente {
+    String saveTxt();
+    void read(String linha);
 }

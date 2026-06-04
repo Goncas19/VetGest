@@ -1,5 +1,5 @@
 package interfaces;
 
-public class Cobravel {
-    
+public interface Cobravel {
+    double calcularPrecoFinal();
 }
