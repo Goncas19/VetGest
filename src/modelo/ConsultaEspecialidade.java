@@ -71,7 +71,10 @@ public class ConsultaEspecialidade extends Consulta {
 
     @Override
     public void read(String linha) {
-        String[] partes = linha.split(";");
+        String[] partes = linha.split(";", -1);
+        if (partes.length != 11 || !"ESPECIALIDADE".equals(partes[0])) {
+            throw new IllegalArgumentException("Formato de consulta de especialidade invalido.");
+        }
         this.setId(Integer.parseInt(partes[1]));
         this.setDescricao(partes[2]);
         this.setData(LocalDate.parse(partes[3]));

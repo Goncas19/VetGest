@@ -73,7 +73,10 @@ public class Consulta extends RegistoClinico {
 
     @Override
     public void read(String linha) {
-        String[] partes = linha.split(";");
+        String[] partes = linha.split(";", -1);
+        if (partes.length != 9 || !"CONSULTA".equals(partes[0])) {
+            throw new IllegalArgumentException("Formato de consulta invalido.");
+        }
         this.id = Integer.parseInt(partes[1]);
         this.descricao = partes[2];
         this.data = LocalDate.parse(partes[3]);

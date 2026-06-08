@@ -67,11 +67,16 @@ public abstract class RegistoClinico implements Cloneable, Cobravel, Persistente
     }
 
     @Override
+    public int hashCode() {
+        return 31 * this.getClass().hashCode() + Integer.hashCode(this.id);
+    }
+
+    @Override
     public RegistoClinico clone() {
         try {
             return (RegistoClinico) super.clone();
         } catch (CloneNotSupportedException e) {
-            return null;
+            throw new AssertionError(e);
         }
     }
 

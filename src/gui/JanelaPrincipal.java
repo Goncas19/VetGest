@@ -1,133 +1,144 @@
 package gui;
 
-import modelo.*;
 import ficheiros.GestorFicheiros;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Locale;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import modelo.Animal;
+import modelo.Cliente;
+import modelo.Clinica;
+import modelo.Consulta;
+import modelo.ConsultaEspecialidade;
+import modelo.RegistoClinico;
+import modelo.Vacina;
 
+@SuppressWarnings("serial")
 public class JanelaPrincipal extends JFrame {
     private Clinica clinica;
 
     public JanelaPrincipal() {
-        // 1. Tenta carregar automaticamente os dados guardados ao abrir
-        try {
-            clinica = GestorFicheiros.carregarClinica();
-        } catch (IOException e) {
-            clinica = new Clinica();
-            JOptionPane.showMessageDialog(this, "Aviso: Ficheiros de dados não encontrados. A iniciar base de dados vazia.");
-        }
-
-        // 2. Configuração Básica da Janela Principal
-        setTitle("VetGest - Sistema de Gestão de Clínica Veterinária");
-        setSize(500, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centra no ecrã
-        
-        // Organiza os botões em 7 linhas e 2 colunas de forma organizada
-        setLayout(new GridLayout(7, 2, 10, 10)); 
-
-        // 3. Criação de Todos os Botões Baseados no MenuConsola
-        JButton btnRegCliente = new JButton("Registar Cliente");
-        JButton btnRegAnimal = new JButton("Registar Animal");
-        JButton btnRegConsulta = new JButton("Registar Consulta");
-        JButton btnRegVacina = new JButton("Registar Vacina");
-        JButton btnRegEspecialidade = new JButton("Registar Especialidade");
-        JButton btnListClientes = new JButton("Listar Clientes");
-        JButton btnListAnimais = new JButton("Listar Animais");
-        JButton btnHistAnimal = new JButton("Histórico de um Animal");
-        JButton btnFaturacao = new JButton("Mostrar Total Faturado");
-        JButton btnPolimorfismo = new JButton("Demonstrar Polimorfismo");
-        JButton btnGuardar = new JButton("Guardar Dados");
-        JButton btnSair = new JButton("Sair do VetGest");
-
-        // 4. Associação das Ações aos Botões
-        btnRegCliente.addActionListener(e -> registarCliente());
-        btnRegAnimal.addActionListener(e -> registarAnimal());
-        btnRegConsulta.addActionListener(e -> registarConsulta());
-        btnRegVacina.addActionListener(e -> registarVacina());
-        btnRegEspecialidade.addActionListener(e -> registarConsultaEspecialidade());
-        btnListClientes.addActionListener(e -> listarClientes());
-        btnListAnimais.addActionListener(e -> listarAnimais());
-        btnHistAnimal.addActionListener(e -> listarHistoricoAnimal());
-        
-        btnFaturacao.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Total Faturado na Clínica: " + clinica.calcularTotalFaturado() + " euros");
-        });
-
-        btnPolimorfismo.addActionListener(e -> {
-            clinica.demonstrarPolimorfismo();
-            JOptionPane.showMessageDialog(this, "Polimorfismo executado! Verifique o terminal do VS Code para ver o output do método print().");
-        });
-
-        btnGuardar.addActionListener(e -> guardarDados());
-        
-        btnSair.addActionListener(e -> {
-            guardarDados(); // Guarda por segurança antes de fechar
-            System.exit(0);
-        });
-
-        // 5. Adicionar os Elementos ao Ecrã Gráfico
-        add(btnRegCliente); add(btnListClientes);
-        add(btnRegAnimal);  add(btnListAnimais);
-        add(btnRegConsulta); add(btnHistAnimal);
-        add(btnRegVacina);   add(btnFaturacao);
-        add(btnRegEspecialidade); add(btnPolimorfismo);
-        add(btnGuardar);     add(new JLabel("")); // Espaço vazio para alinhar
-        add(btnSair);
+        this.clinica = carregarClinicaInicial();
+        configurarJanela();
+        adicionarBotoes();
     }
 
-    // --- MÉTODOS AUXILIARES DE INTERFAZAÇÃO (Substitutos seguros do Scanner) ---
+    private Clinica carregarClinicaInicial() {
+        try {
+            return GestorFicheiros.carregarClinica();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Não foi possível carregar os dados.\n" + e.getMessage()
+                            + "\nA aplicação será iniciada com dados vazios.",
+                    "Erro ao carregar dados",
+                    JOptionPane.WARNING_MESSAGE);
+            return new Clinica();
+        }
+    }
+
+    private void configurarJanela() {
+        setTitle("VetGest - Sistema de Gestão de Clínica Veterinária");
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setLayout(new BorderLayout());
+        setSize(560, 430);
+        setLocationRelativeTo(null);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                sair();
+            }
+        });
+    }
+
+    private void adicionarBotoes() {
+        JPanel painel = new JPanel(new GridLayout(0, 2, 10, 10));
+        painel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        painel.add(criarBotao("Registar Cliente", this::registarCliente));
+        painel.add(criarBotao("Listar Clientes", this::listarClientes));
+        painel.add(criarBotao("Registar Animal", this::registarAnimal));
+        painel.add(criarBotao("Listar Animais", this::listarAnimais));
+        painel.add(criarBotao("Registar Consulta", this::registarConsulta));
+        painel.add(criarBotao("Histórico de um Animal", this::listarHistoricoAnimal));
+        painel.add(criarBotao("Registar Vacina", this::registarVacina));
+        painel.add(criarBotao("Mostrar Total Faturado", this::mostrarTotalFaturado));
+        painel.add(criarBotao("Registar Especialidade", this::registarConsultaEspecialidade));
+        painel.add(criarBotao("Demonstrar Polimorfismo", this::demonstrarPolimorfismo));
+        painel.add(criarBotao("Guardar Dados", () -> guardarDados(true)));
+        painel.add(criarBotao("Sair do VetGest", this::sair));
+
+        add(painel, BorderLayout.CENTER);
+    }
+
+    private JButton criarBotao(String texto, Runnable acao) {
+        JButton botao = new JButton(texto);
+        botao.addActionListener(e -> acao.run());
+        return botao;
+    }
 
     private void registarCliente() {
-        int id = clinica.proximoIdCliente();
-        String nome = JOptionPane.showInputDialog(this, "Nome do Cliente:");
-        if (nome == null || nome.trim().isEmpty()) return;
-        String telefone = JOptionPane.showInputDialog(this, "Telefone:");
-        String email = JOptionPane.showInputDialog(this, "Email:");
+        String nome = pedirTextoObrigatorio("Nome do cliente:");
+        if (nome == null) return;
+        String telefone = pedirTextoObrigatorio("Telefone:");
+        if (telefone == null) return;
+        String email = pedirTextoObrigatorio("Email:");
+        if (email == null) return;
 
+        int id = clinica.proximoIdCliente();
         clinica.adicionarCliente(new Cliente(id, nome, telefone, email));
-        JOptionPane.showMessageDialog(this, "Cliente registado com o ID " + id + ".");
+        mostrarInformacao("Cliente registado com o ID " + id + ".");
     }
 
     private void registarAnimal() {
         if (clinica.getClientes().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "É necessário registar um cliente primeiro!");
+            mostrarAviso("É necessário registar um cliente primeiro.");
             return;
         }
-        String idDonoStr = JOptionPane.showInputDialog(this, "Introduza o ID do Dono (Cliente):");
-        if (idDonoStr == null) return;
-        int idCliente = Integer.parseInt(idDonoStr);
 
+        Integer idCliente = pedirInteiroMinimo("ID do dono:\n\n" + textoClientes(), 1);
+        if (idCliente == null) return;
         if (clinica.procurarClientePorId(idCliente) == null) {
-            JOptionPane.showMessageDialog(this, "Cliente não encontrado.");
+            mostrarAviso("Cliente não encontrado.");
             return;
         }
+
+        String nome = pedirTextoObrigatorio("Nome do animal:");
+        if (nome == null) return;
+        String especie = pedirTextoObrigatorio("Espécie:");
+        if (especie == null) return;
+        String raca = pedirTextoObrigatorio("Raça:");
+        if (raca == null) return;
+        Integer idade = pedirInteiroMinimo("Idade:", 0);
+        if (idade == null) return;
 
         int id = clinica.proximoIdAnimal();
-        String nome = JOptionPane.showInputDialog(this, "Nome do Animal:");
-        String especie = JOptionPane.showInputDialog(this, "Espécie:");
-        String raca = JOptionPane.showInputDialog(this, "Raça:");
-        int idade = Integer.parseInt(JOptionPane.showInputDialog(this, "Idade:"));
-
         clinica.adicionarAnimal(new Animal(id, nome, especie, raca, idade, idCliente));
-        JOptionPane.showMessageDialog(this, "Animal registado com o ID " + id + ".");
+        mostrarInformacao("Animal registado com o ID " + id + ".");
     }
 
     private Animal escolherAnimal() {
         if (clinica.getAnimais().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Não existem animais registados.");
+            mostrarAviso("Não existem animais registados.");
             return null;
         }
-        String idAnimalStr = JOptionPane.showInputDialog(this, "Introduza o ID do Animal:");
-        if (idAnimalStr == null) return null;
-        int idAnimal = Integer.parseInt(idAnimalStr);
+
+        Integer idAnimal = pedirInteiroMinimo("ID do animal:\n\n" + textoAnimais(), 1);
+        if (idAnimal == null) return null;
+
         Animal animal = clinica.procurarAnimalPorId(idAnimal);
-        if (animal == null) JOptionPane.showMessageDialog(this, "Animal não encontrado.");
+        if (animal == null) mostrarAviso("Animal não encontrado.");
         return animal;
     }
 
@@ -135,96 +146,214 @@ public class JanelaPrincipal extends JFrame {
         Animal animal = escolherAnimal();
         if (animal == null) return;
 
-        int id = clinica.proximoIdRegisto();
-        String descricao = JOptionPane.showInputDialog(this, "Descrição da Consulta:");
-        double precoBase = Double.parseDouble(JOptionPane.showInputDialog(this, "Preço Base:"));
-        String veterinario = JOptionPane.showInputDialog(this, "Nome do Veterinário:");
-        String diagnostico = JOptionPane.showInputDialog(this, "Diagnóstico:");
-        int duracao = Integer.parseInt(JOptionPane.showInputDialog(this, "Duração (minutos):"));
+        String descricao = pedirTextoObrigatorio("Descrição da consulta:");
+        if (descricao == null) return;
+        Double precoBase = pedirDoubleMinimo("Preço base:", 0.0);
+        if (precoBase == null) return;
+        String veterinario = pedirTextoObrigatorio("Nome do veterinário:");
+        if (veterinario == null) return;
+        String diagnostico = pedirTextoObrigatorio("Diagnóstico:");
+        if (diagnostico == null) return;
+        Integer duracao = pedirInteiroMinimo("Duração em minutos:", 0);
+        if (duracao == null) return;
 
-        RegistoClinico consulta = new Consulta(id, descricao, LocalDate.now(), precoBase, animal.getId(), veterinario, diagnostico, duracao);
-        clinica.adicionarRegisto(consulta);
-        JOptionPane.showMessageDialog(this, "Consulta registada com o ID " + id + ".");
+        int id = clinica.proximoIdRegisto();
+        clinica.adicionarRegisto(new Consulta(
+                id, descricao, LocalDate.now(), precoBase, animal.getId(), veterinario, diagnostico, duracao));
+        mostrarInformacao("Consulta registada com o ID " + id + ".");
     }
 
     private void registarVacina() {
         Animal animal = escolherAnimal();
         if (animal == null) return;
 
-        int id = clinica.proximoIdRegisto();
-        String descricao = JOptionPane.showInputDialog(this, "Descrição:");
-        double precoBase = Double.parseDouble(JOptionPane.showInputDialog(this, "Preço Base:"));
-        String nomeVacina = JOptionPane.showInputDialog(this, "Nome da Vacina:");
-        String lote = JOptionPane.showInputDialog(this, "Lote:");
-        int resp = JOptionPane.showConfirmDialog(this, "É uma dose de reforço?", "Reforço", JOptionPane.YES_NO_OPTION);
-        boolean reforco = (resp == JOptionPane.YES_OPTION);
+        String descricao = pedirTextoObrigatorio("Descrição:");
+        if (descricao == null) return;
+        Double precoBase = pedirDoubleMinimo("Preço base:", 0.0);
+        if (precoBase == null) return;
+        String nomeVacina = pedirTextoObrigatorio("Nome da vacina:");
+        if (nomeVacina == null) return;
+        String lote = pedirTextoObrigatorio("Lote:");
+        if (lote == null) return;
 
-        RegistoClinico vacina = new Vacina(id, descricao, LocalDate.now(), precoBase, animal.getId(), nomeVacina, lote, reforco);
-        clinica.adicionarRegisto(vacina);
-        JOptionPane.showMessageDialog(this, "Vacina registada com o ID " + id + ".");
+        int resposta = JOptionPane.showConfirmDialog(
+                this, "É uma dose de reforço?", "Reforço", JOptionPane.YES_NO_CANCEL_OPTION);
+        if (resposta == JOptionPane.CANCEL_OPTION || resposta == JOptionPane.CLOSED_OPTION) return;
+
+        int id = clinica.proximoIdRegisto();
+        boolean reforco = resposta == JOptionPane.YES_OPTION;
+        clinica.adicionarRegisto(new Vacina(
+                id, descricao, LocalDate.now(), precoBase, animal.getId(), nomeVacina, lote, reforco));
+        mostrarInformacao("Vacina registada com o ID " + id + ".");
     }
 
     private void registarConsultaEspecialidade() {
         Animal animal = escolherAnimal();
         if (animal == null) return;
 
-        int id = clinica.proximoIdRegisto();
-        String descricao = JOptionPane.showInputDialog(this, "Descrição:");
-        double precoBase = Double.parseDouble(JOptionPane.showInputDialog(this, "Preço Base:"));
-        String veterinario = JOptionPane.showInputDialog(this, "Veterinário:");
-        String diagnostico = JOptionPane.showInputDialog(this, "Diagnóstico:");
-        int duracao = Integer.parseInt(JOptionPane.showInputDialog(this, "Duração (minutos):"));
-        String especialidade = JOptionPane.showInputDialog(this, "Especialidade (ex: Cardiologia):");
-        double taxa = Double.parseDouble(JOptionPane.showInputDialog(this, "Taxa de Especialidade:"));
+        String descricao = pedirTextoObrigatorio("Descrição:");
+        if (descricao == null) return;
+        Double precoBase = pedirDoubleMinimo("Preço base:", 0.0);
+        if (precoBase == null) return;
+        String veterinario = pedirTextoObrigatorio("Veterinário:");
+        if (veterinario == null) return;
+        String diagnostico = pedirTextoObrigatorio("Diagnóstico:");
+        if (diagnostico == null) return;
+        Integer duracao = pedirInteiroMinimo("Duração em minutos:", 0);
+        if (duracao == null) return;
+        String especialidade = pedirTextoObrigatorio("Especialidade:");
+        if (especialidade == null) return;
+        Double taxa = pedirDoubleMinimo("Taxa de especialidade:", 0.0);
+        if (taxa == null) return;
 
-        RegistoClinico consulta = new ConsultaEspecialidade(id, descricao, LocalDate.now(), precoBase, animal.getId(), veterinario, diagnostico, duracao, especialidade, taxa);
-        clinica.adicionarRegisto(consulta);
-        JOptionPane.showMessageDialog(this, "Consulta de especialidade registada com o ID " + id + ".");
+        int id = clinica.proximoIdRegisto();
+        clinica.adicionarRegisto(new ConsultaEspecialidade(
+                id, descricao, LocalDate.now(), precoBase, animal.getId(), veterinario,
+                diagnostico, duracao, especialidade, taxa));
+        mostrarInformacao("Consulta de especialidade registada com o ID " + id + ".");
     }
 
     private void listarClientes() {
         if (clinica.getClientes().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Não existem clientes registados.");
+            mostrarAviso("Não existem clientes registados.");
             return;
         }
-        StringBuilder sb = new StringBuilder("=== LISTA DE CLIENTES ===\n");
-        for (Cliente c : clinica.getClientes()) sb.append(c.toString()).append("\n");
-        JOptionPane.showMessageDialog(this, new JTextArea(sb.toString()));
+        mostrarTexto("Lista de clientes", textoClientes());
     }
 
     private void listarAnimais() {
         if (clinica.getAnimais().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Não existem animais registados.");
+            mostrarAviso("Não existem animais registados.");
             return;
         }
-        StringBuilder sb = new StringBuilder("=== LISTA DE ANIMAIS ===\n");
-        for (Animal a : clinica.getAnimais()) {
-            Cliente dono = clinica.procurarClientePorId(a.getIdCliente());
-            String nomeDono = (dono == null) ? "Sem Dono" : dono.getNome();
-            sb.append(a.toString()).append(" - Dono: ").append(nomeDono).append("\n");
+        mostrarTexto("Lista de animais", textoAnimais());
+    }
+
+    private String textoClientes() {
+        StringBuilder texto = new StringBuilder();
+        for (Cliente cliente : clinica.getClientes()) {
+            texto.append(cliente).append('\n');
         }
-        JOptionPane.showMessageDialog(this, new JTextArea(sb.toString()));
+        return texto.toString();
+    }
+
+    private String textoAnimais() {
+        StringBuilder texto = new StringBuilder();
+        for (Animal animal : clinica.getAnimais()) {
+            Cliente dono = clinica.procurarClientePorId(animal.getIdCliente());
+            String nomeDono = dono == null ? "Sem dono" : dono.getNome();
+            texto.append(animal).append(" - Dono: ").append(nomeDono).append('\n');
+        }
+        return texto.toString();
     }
 
     private void listarHistoricoAnimal() {
         Animal animal = escolherAnimal();
         if (animal == null) return;
+
         ArrayList<RegistoClinico> historico = clinica.obterHistoricoAnimal(animal.getId());
         if (historico.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Este animal não tem registos clínicos.");
+            mostrarAviso("Este animal não tem registos clínicos.");
             return;
         }
-        StringBuilder sb = new StringBuilder("Histórico de " + animal.getNome() + ":\n\n");
-        for (RegistoClinico r : historico) sb.append(r.toString()).append("\n");
-        JOptionPane.showMessageDialog(this, new JTextArea(sb.toString()));
+
+        StringBuilder texto = new StringBuilder();
+        for (RegistoClinico registo : historico) {
+            texto.append(registo).append('\n');
+        }
+        mostrarTexto("Histórico de " + animal.getNome(), texto.toString());
     }
 
-    private void guardarDados() {
+    private void mostrarTotalFaturado() {
+        mostrarInformacao(String.format(
+                Locale.ROOT, "Total faturado na clínica: %.2f euros", clinica.calcularTotalFaturado()));
+    }
+
+    private void demonstrarPolimorfismo() {
+        if (clinica.getRegistosClinicos().isEmpty()) {
+            mostrarAviso("Não existem registos clínicos.");
+            return;
+        }
+        clinica.demonstrarPolimorfismo();
+        mostrarInformacao("Polimorfismo executado. Consulte o terminal para ver o resultado.");
+    }
+
+    private boolean guardarDados(boolean mostrarSucesso) {
         try {
             GestorFicheiros.guardarClinica(clinica);
-            JOptionPane.showMessageDialog(this, "Dados salvos com sucesso!");
+            if (mostrarSucesso) mostrarInformacao("Dados guardados com sucesso.");
+            return true;
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao guardar dados: " + e.getMessage());
+            JOptionPane.showMessageDialog(
+                    this, "Erro ao guardar dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
+    }
+
+    private void sair() {
+        if (guardarDados(false)) {
+            dispose();
+        }
+    }
+
+    private String pedirTextoObrigatorio(String mensagem) {
+        while (true) {
+            String valor = JOptionPane.showInputDialog(this, mensagem);
+            if (valor == null) return null;
+
+            valor = valor.trim();
+            if (valor.isEmpty()) {
+                mostrarAviso("O valor não pode ficar vazio.");
+            } else if (valor.contains(";")) {
+                mostrarAviso("O valor não pode conter ponto e vírgula.");
+            } else {
+                return valor;
+            }
+        }
+    }
+
+    private Integer pedirInteiroMinimo(String mensagem, int minimo) {
+        while (true) {
+            String texto = JOptionPane.showInputDialog(this, mensagem);
+            if (texto == null) return null;
+
+            try {
+                int valor = Integer.parseInt(texto.trim());
+                if (valor >= minimo) return valor;
+                mostrarAviso("Introduza um valor igual ou superior a " + minimo + ".");
+            } catch (NumberFormatException e) {
+                mostrarAviso("Introduza um número inteiro válido.");
+            }
+        }
+    }
+
+    private Double pedirDoubleMinimo(String mensagem, double minimo) {
+        while (true) {
+            String texto = JOptionPane.showInputDialog(this, mensagem);
+            if (texto == null) return null;
+
+            try {
+                double valor = Double.parseDouble(texto.trim().replace(",", "."));
+                if (Double.isFinite(valor) && valor >= minimo) return valor;
+                mostrarAviso("Introduza um valor igual ou superior a " + minimo + ".");
+            } catch (NumberFormatException e) {
+                mostrarAviso("Introduza um número válido.");
+            }
+        }
+    }
+
+    private void mostrarTexto(String titulo, String texto) {
+        JTextArea area = new JTextArea(texto, 14, 50);
+        area.setEditable(false);
+        area.setCaretPosition(0);
+        JOptionPane.showMessageDialog(this, new JScrollPane(area), titulo, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void mostrarInformacao(String mensagem) {
+        JOptionPane.showMessageDialog(this, mensagem, "VetGest", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void mostrarAviso(String mensagem) {
+        JOptionPane.showMessageDialog(this, mensagem, "Aviso", JOptionPane.WARNING_MESSAGE);
     }
 }

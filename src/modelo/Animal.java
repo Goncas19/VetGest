@@ -59,13 +59,21 @@ public class Animal implements Cloneable, Persistente {
     }
 
     @Override
+    public int hashCode() {
+        return Integer.hashCode(this.id);
+    }
+
+    @Override
     public String saveTxt() {
         return this.id + ";" + this.nome + ";" + this.especie + ";" + this.raca + ";" + this.idade + ";" + this.idCliente;
     }
 
     @Override
     public void read(String linha) {
-        String[] partes = linha.split(";");
+        String[] partes = linha.split(";", -1);
+        if (partes.length != 6) {
+            throw new IllegalArgumentException("Formato de animal invalido.");
+        }
         this.id = Integer.parseInt(partes[0]);
         this.nome = partes[1];
         this.especie = partes[2];

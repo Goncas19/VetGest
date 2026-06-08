@@ -72,7 +72,13 @@ public class Vacina extends RegistoClinico {
 
     @Override
     public void read(String linha) {
-        String[] partes = linha.split(";");
+        String[] partes = linha.split(";", -1);
+        if (partes.length != 9 || !"VACINA".equals(partes[0])) {
+            throw new IllegalArgumentException("Formato de vacina invalido.");
+        }
+        if (!"true".equalsIgnoreCase(partes[8]) && !"false".equalsIgnoreCase(partes[8])) {
+            throw new IllegalArgumentException("Valor da dose de reforco invalido.");
+        }
         this.id = Integer.parseInt(partes[1]);
         this.descricao = partes[2];
         this.data = LocalDate.parse(partes[3]);
