@@ -1,32 +1,42 @@
 package modelo;
 
 import interfaces.Persistente;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Cliente implements Cloneable, Persistente {
     private int id;
     private String nome;
+    private String nif;
+    private LocalDate dataNascimento;
     private String telefone;
     private String email;
 
     public Cliente() {
-        this(0, "Sem nome", "Sem telefone", "Sem email");
+        this(0, "Sem nome", "000000000", LocalDate.now(), "Sem telefone", "Sem email");
     }
 
-    public Cliente(int id, String nome, String telefone, String email) {
+    public Cliente(int id, String nome, String nif, LocalDate dataNascimento, String telefone, String email) {
         this.id = id;
         this.nome = nome;
+        this.nif = nif;
+        this.dataNascimento = dataNascimento;
         this.telefone = telefone;
         this.email = email;
     }
 
     public Cliente(Cliente outro) {
-        this(outro.id, outro.nome, outro.telefone, outro.email);
+        this(outro.id, outro.nome, outro.nif, outro.dataNascimento, outro.telefone, outro.email);
     }
 
     public int getId() { return this.id; }
     public void setId(int id) { this.id = id; }
     public String getNome() { return this.nome; }
     public void setNome(String nome) { this.nome = nome; }
+    public String getNif() { return this.nif; }
+    public void setNif(String nif) { this.nif = nif; }
+    public LocalDate getDataNascimento() { return this.dataNascimento; }
+    public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
     public String getTelefone() { return this.telefone; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
     public String getEmail() { return this.email; }
@@ -34,12 +44,20 @@ public class Cliente implements Cloneable, Persistente {
 
     @Override
     public String toString() {
-        return this.id + " - " + this.nome + " | " + this.telefone + " | " + this.email;
+        return this.getId() + " - " + this.getNome() 
+             + " | NIF: " + this.getNif() 
+             + " | Nasc: " + this.getDataNascimento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) 
+             + " | Tel: " + this.getTelefone() 
+             + " | Email: " + this.getEmail();
     }
 
-    @Override
+   @Override
     public Cliente clone() {
-        return new Cliente(this);
+        try {
+            return (Cliente) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     @Override
@@ -57,18 +75,20 @@ public class Cliente implements Cloneable, Persistente {
 
     @Override
     public String saveTxt() {
-        return this.id + ";" + this.nome + ";" + this.telefone + ";" + this.email;
+        return this.id + ";" + this.nome + ";" + this.nif + ";" + this.dataNascimento + ";" + this.telefone + ";" + this.email;
     }
 
     @Override
     public void read(String linha) {
         String[] partes = linha.split(";", -1);
-        if (partes.length != 4) {
+        if (partes.length != 6) {
             throw new IllegalArgumentException("Formato de cliente invalido.");
         }
         this.id = Integer.parseInt(partes[0]);
         this.nome = partes[1];
-        this.telefone = partes[2];
-        this.email = partes[3];
+        this.nif = partes[2];
+        this.dataNascimento = LocalDate.parse(partes[3]);
+        this.telefone = partes[4];
+        this.email = partes[5];
     }
 }

@@ -3,15 +3,15 @@ package modelo;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Clinica {
+public final class Clinica {
     private ArrayList<Cliente> clientes;
     private ArrayList<Animal> animais;
     private ArrayList<RegistoClinico> registosClinicos;
 
     public Clinica() {
-        this.clientes = new ArrayList<Cliente>();
-        this.animais = new ArrayList<Animal>();
-        this.registosClinicos = new ArrayList<RegistoClinico>();
+        this.clientes = new ArrayList<>();
+        this.animais = new ArrayList<>();
+        this.registosClinicos = new ArrayList<>();
     }
 
     public Clinica(ArrayList<Cliente> clientes, ArrayList<Animal> animais, ArrayList<RegistoClinico> registosClinicos) {
@@ -88,7 +88,7 @@ public class Clinica {
     }
 
     public ArrayList<RegistoClinico> obterHistoricoAnimal(int idAnimal) {
-        ArrayList<RegistoClinico> historico = new ArrayList<RegistoClinico>();
+        ArrayList<RegistoClinico> historico = new ArrayList<>();
         for (RegistoClinico registo : this.registosClinicos) {
             if (registo.getIdAnimal() == idAnimal) historico.add(registo);
         }

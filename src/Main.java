@@ -1,6 +1,7 @@
+import gui.JanelaPrincipal;
 public class Main {
     public static void main(String[] args) {
-        MenuConsola menu = new MenuConsola();
-        menu.iniciar();
+        JanelaPrincipal janela = new JanelaPrincipal();
+        janela.setVisible(true);
     }
 }

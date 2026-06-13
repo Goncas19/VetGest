@@ -1,30 +1,32 @@
 package modelo;
 
 import interfaces.Persistente;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class Animal implements Cloneable, Persistente {
     private int id;
     private String nome;
     private String especie;
     private String raca;
-    private int idade;
+    private LocalDate dataNascimento;
     private int idCliente;
 
     public Animal() {
-        this(0, "Sem nome", "Sem especie", "Sem raca", 0, 0);
+        this(0, "Sem nome", "Sem especie", "Sem raca", LocalDate.now(), 0);
     }
 
-    public Animal(int id, String nome, String especie, String raca, int idade, int idCliente) {
+    public Animal(int id, String nome, String especie, String raca, LocalDate dataNascimento, int idCliente) {
         this.id = id;
         this.nome = nome;
         this.especie = especie;
         this.raca = raca;
-        this.idade = idade;
+        this.dataNascimento = dataNascimento;
         this.idCliente = idCliente;
     }
 
     public Animal(Animal outro) {
-        this(outro.id, outro.nome, outro.especie, outro.raca, outro.idade, outro.idCliente);
+        this(outro.id, outro.nome, outro.especie, outro.raca, outro.dataNascimento, outro.idCliente);
     }
 
     public int getId() { return this.id; }
@@ -35,19 +37,28 @@ public class Animal implements Cloneable, Persistente {
     public void setEspecie(String especie) { this.especie = especie; }
     public String getRaca() { return this.raca; }
     public void setRaca(String raca) { this.raca = raca; }
-    public int getIdade() { return this.idade; }
-    public void setIdade(int idade) { this.idade = idade; }
+    public LocalDate getDataNascimento() { return this.dataNascimento; }
+    public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
     public int getIdCliente() { return this.idCliente; }
     public void setIdCliente(int idCliente) { this.idCliente = idCliente; }
 
+    // O sistema calcula a idade sozinho baseando-se na data de hoje!
+    public int getIdade() {
+        return (int) ChronoUnit.YEARS.between(this.dataNascimento, LocalDate.now());
+    }
+
     @Override
     public String toString() {
-        return this.id + " - " + this.nome + " (" + this.especie + ", " + this.raca + ")";
+        return this.id + " - " + this.nome + " (" + this.especie + " - " + getIdade() + " anos)";
     }
 
     @Override
     public Animal clone() {
-        return new Animal(this);
+        try {
+            return (Animal) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     @Override
@@ -65,7 +76,7 @@ public class Animal implements Cloneable, Persistente {
 
     @Override
     public String saveTxt() {
-        return this.id + ";" + this.nome + ";" + this.especie + ";" + this.raca + ";" + this.idade + ";" + this.idCliente;
+        return this.id + ";" + this.nome + ";" + this.especie + ";" + this.raca + ";" + this.dataNascimento + ";" + this.idCliente;
     }
 
     @Override
@@ -78,7 +89,7 @@ public class Animal implements Cloneable, Persistente {
         this.nome = partes[1];
         this.especie = partes[2];
         this.raca = partes[3];
-        this.idade = Integer.parseInt(partes[4]);
+        this.dataNascimento = LocalDate.parse(partes[4]);
         this.idCliente = Integer.parseInt(partes[5]);
     }
 }
